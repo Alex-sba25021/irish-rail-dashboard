@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ElectraAIBot</title>
+
+<style>
+:root {
+  --glass-bg: rgba(255,255,255,0.1);
+  --glass-border: rgba(255,255,255,0.2);
+  --shadow-soft: 0 25px 50px rgba(0,0,0,0.15);
+  --text-main: #ffffff;
+  --accent: #00d9ff;
+  --accent-glow: rgba(0,217,255,0.4);
+}
+
+* { 
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0,217,255,0.15), transparent 70%);
+  border-radius: 50%;
+  top: -200px;
+  left: -200px;
+  animation: float 8s ease-in-out infinite;
+}
+
+body::after {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(100,120,255,0.15), transparent 70%);
+  border-radius: 50%;
+  bottom: -150px;
+  right: -150px;
+  animation: float 10s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, 50px) scale(1.1); }
+}
+
+.developer-credit {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  color: rgba(255,255,255,0.4);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  z-index: 100;
+  animation: fadeInDown 1.2s ease-out;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+  background: rgba(255,255,255,0.03);
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.developer-credit:hover {
+  color: rgba(0,217,255,0.8);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(0,217,255,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,217,255,0.2);
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-shell {
+  width: 760px;
+  max-width: 92%;
+  height: 78vh;
+  background: var(--glass-bg);
+  backdrop-filter: blur(40px) saturate(180%);
+  border-radius: 32px;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255,255,255,0.1) inset;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+  animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chat-shell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.header {
+  padding: 24px 28px;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--text-main);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header::before {
+  content: '⚡';
+  font-size: 24px;
+  animation: pulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+.chat {
+  flex: 1;
+  padding: 28px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.chat::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+}
+
+.chat::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+
+.chat::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.message {
+  max-width: 75%;
+  margin-bottom: 18px;
+  line-height: 1.5;
+  animation: messageSlide 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.user {
+  margin-left: auto;
+  background: linear-gradient(135deg, #00d9ff, #0099ff);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 22px 22px 6px 22px;
+  box-shadow: 0 8px 24px rgba(0,217,255,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset;
+  transition: all 0.3s ease;
+}
+
+.user:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,217,255,0.4), 0 0 0 1px rgba(255,255,255,0.2) inset;
+}
+
+.bot {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px);
+  color: var(--text-main);
+  padding: 14px 20px;
+  border-radius: 22px 22px 22px 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.1) inset;
+  transition: all 0.3s ease;
+  animation: typing 0.6s ease-out;
+}
+
+.bot:hover {
+  transform: translateY(-2px) scale(1.02);
+  background: rgba(255,255,255,0.2);
+}
+
+@keyframes typing {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.typing-indicator {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px);
+  padding: 14px 20px;
+  border-radius: 22px 22px 22px 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  animation: typing 0.6s ease-out;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: bounce 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { 
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% { 
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.input-bar {
+  padding: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  gap: 14px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.03));
+}
+
+input {
+  flex: 1;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 14px 20px;
+  font-size: 15px;
+  outline: none;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+  color: var(--text-main);
+  transition: all 0.3s ease;
+}
+
+input::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+input:focus {
+  border-color: var(--accent);
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 0 4px rgba(0,217,255,0.1), 0 8px 24px rgba(0,217,255,0.2);
+  transform: translateY(-2px);
+}
+
+button {
+  border: none;
+  border-radius: 24px;
+  padding: 0 28px;
+  background: linear-gradient(135deg, var(--accent), #0099ff);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 8px 24px rgba(0,217,255,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 32px rgba(0,217,255,0.4), 0 0 0 1px rgba(255,255,255,0.2) inset;
+}
+
+button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+button:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes messageSlide {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="developer-credit">Developed by Alex Dzodzuashvili 2025</div>
+
+<div class="chat-shell">
+  <div class="header">ElectraAIBot</div>
+
+  <div class="chat" id="chat">
+    <div class="message bot">
+      Hey there! 👋 I'm here to help with Irish electricity providers. What would you like to know?
+    </div>
+  </div>
+
+  <div class="input-bar">
+    <input id="input" placeholder="Ask question here…" />
+    <button onclick="send()" id="sendBtn">Send</button>
+  </div>
+</div>
+
+<script>
+const GEMINI_API_KEY = "AIzaSyAfiNZo3C3gCaE2vJAXue_-EjNjghvfvHE";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+
+const greetings = [
+  "Hey there! 👋 I'm here to help with Irish electricity providers. What would you like to know?",
+  "Hi! 😊 Feel free to ask me anything about electricity contracts or smart meters in Ireland.",
+  "Hello! I specialize in Irish electricity providers. How can I assist you today?",
+  "Welcome! ⚡ I can help you learn about contracts, smart meters, and Irish energy providers.",
+  "Hi there! Ask me anything about Irish electricity companies and I'll do my best to help!"
+];
+
+const providers = {
+  "electric ireland": {
+    name: "Electric Ireland",
+    contract: "Electric Ireland typically offers electricity contracts that run for around 12 months.",
+    smart: "Yes. Electric Ireland supports smart meter electricity plans, including time-of-use options.",
+    intro: "Electric Ireland is one of Ireland's largest electricity providers."
+  },
+  "energia": {
+    name: "Energia",
+    contract: "Energia usually offers electricity contracts of around 12 months.",
+    smart: "Yes. Energia supports smart meter electricity plans.",
+    intro: "Energia is an established electricity provider operating in Ireland."
+  },
+  "bord gais": {
+    name: "Bord Gáis Energy",
+    contract: "Bord Gáis Energy generally offers electricity contracts of around 12 months.",
+    smart: "Yes. Bord Gáis Energy supports smart meter electricity plans.",
+    intro: "Bord Gáis Energy supplies electricity across Ireland."
+  },
+  "airtricity": {
+    name: "SSE Airtricity",
+    contract: "SSE Airtricity typically offers electricity contracts of around 12 months.",
+    smart: "Yes. SSE Airtricity supports smart meter electricity plans.",
+    intro: "SSE Airtricity is a major electricity provider in Ireland."
+  },
+  "yuno": {
+    name: "Yuno Energy",
+    contract: "Yuno Energy usually offers electricity contracts of around 12 months.",
+    smart: "Yes. Yuno Energy supports smart meter electricity plans.",
+    intro: "Yuno Energy is a newer electricity provider in the Irish market."
+  },
+  "flogas": {
+    name: "Flogas",
+    contract: "Flogas generally offers electricity contracts of around 12 months.",
+    smart: "Yes. Flogas supports smart meter electricity plans.",
+    intro: "Flogas supplies electricity to customers in Ireland."
+  }
+};
+
+let lastProvider = null;
+
+function findProvider(text) {
+  const t = text.toLowerCase();
+  for (const key in providers) {
+    if (t.includes(key)) return providers[key];
+  }
+  return null;
+}
+
+function respond(text) {
+  const t = text.toLowerCase();
+
+  if (/^(hi|hello|hey|helo)\b/.test(t)) {
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }
+
+  const provider = findProvider(t) || lastProvider;
+
+  if (findProvider(t)) {
+    lastProvider = findProvider(t);
+  }
+
+  if (provider && t.includes("contract")) {
+    return provider.contract;
+  }
+
+  if (provider && t.includes("smart")) {
+    return provider.smart;
+  }
+
+  if (provider && t === provider.name.toLowerCase()) {
+    return provider.intro;
+  }
+
+  if (provider && !t.includes("contract") && !t.includes("smart")) {
+    return provider.intro;
+  }
+
+  if (t.includes("contract")) {
+    return "Electricity contracts in Ireland typically run for around 12 months.";
+  }
+
+  if (t.includes("smart meter")) {
+    return "A smart meter records electricity usage in intervals and enables time-of-use electricity plans.";
+  }
+
+  return null; // Will use Gemini for fallback
+}
+
+function showTypingIndicator() {
+  const chat = document.getElementById("chat");
+  const indicator = document.createElement("div");
+  indicator.className = "message";
+  indicator.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+  indicator.id = "typing";
+  chat.appendChild(indicator);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  const indicator = document.getElementById("typing");
+  if (indicator) indicator.remove();
+}
+
+async function callGemini(userMessage) {
+  const prompt = `You are ElectraAIBot, a helpful assistant for Irish electricity providers. 
+Answer this question naturally and concisely: "${userMessage}"
+Keep responses short, friendly, and informative.`;
+
+  try {
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error("Gemini API error:", error);
+    return "I can help with electricity contracts and smart meters for Irish providers.";
+  }
+}
+
+async function send() {
+  const input = document.getElementById("input");
+  const chat = document.getElementById("chat");
+  const sendBtn = document.getElementById("sendBtn");
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Add user message
+  chat.innerHTML += `<div class="message user">${text}</div>`;
+  input.value = "";
+  sendBtn.disabled = true;
+
+  // Try local response first
+  const localReply = respond(text);
+  
+  if (localReply) {
+    // Use local knowledge
+    chat.innerHTML += `<div class="message bot">${localReply}</div>`;
+    chat.scrollTop = chat.scrollHeight;
+    sendBtn.disabled = false;
+  } else {
+    // Use Gemini for fallback
+    showTypingIndicator();
+    const geminiReply = await callGemini(text);
+    removeTypingIndicator();
+    chat.innerHTML += `<div class="message bot">${geminiReply}</div>`;
+    chat.scrollTop = chat.scrollHeight;
+    sendBtn.disabled = false;
+  }
+}
+
+document.getElementById("input").addEventListener("keydown", e => {
+  if (e.key === "Enter") send();
+});
+</script>
+
+</body>
+</html>
